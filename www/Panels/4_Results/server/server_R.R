@@ -18,6 +18,9 @@ r$calculation <- 0
 #To create UI when clicking repeat experimentation
 observeEvent(input$repeatexperimentation,{
   
+  r$dashboard <- "A"
+  r$modelsdir <- 'A'
+  
   #To enable results tab
   enable(
     selector = '#Main_tabsetpanel a[data-value = "Results"]')
@@ -197,29 +200,32 @@ observeEvent(input$rcalculation,{
     #TS
     for (i in 1:amountofts) {
       
-      ts <- createts(sf$Xdata,
-                     sf$EDA,
-                     sf$selectedtrains,
-                     i,
-                     sf$testend)
+      ts <- createts(
+        sf$Xdata,
+        sf$EDA,
+        sf$selectedtrains,
+        i,
+        sf$testend)
       
       set <- sf$selectedtrains[i,1]
       
       #Transform TS
       for (tf in 1:amountoftf) {
         
-        transfts <- createtrfts(TS =  ts,
-                                trf = sf$tstransform,
-                                ntrf = tf)
+        transfts <- createtrfts(
+          TS =  ts,
+          trf = sf$tstransform,
+          ntrf = tf)
         
         trf <- sf$tstransform[tf]
         
         #Scale TS
         for (sc in 1:amountofsc) {
           
-          scts <- createscts(transfts,
-                             sf$tsscales,
-                             sc)
+          scts <- createscts(
+            transfts,
+            sf$tsscales,
+            sc)
           
           sca <- sf$tsscales[sc]
           
@@ -241,7 +247,6 @@ observeEvent(input$rcalculation,{
             starttest <- which(tstv[[1]] == sf$teststart)
             truetestvector <- vector[(starttest-steps+1):dim(vector)[1],,-1,drop = F]
             date3dtest <- vector[(starttest-steps+1):dim(vector)[1],,1,drop = F]
-            
             
             vector <- threedvectfunc(scts[,-1,drop=F], steps, c(1,dim(scts)[1]))
             starttest <- which(scts[[1]] == sf$teststart)
@@ -322,14 +327,15 @@ observeEvent(input$rcalculation,{
                                          inp,
                                          drop = F])[1]
               #Create callback
-              cd <- creatingcallback(nmodel = modelbuilding,
-                                     session = session,
-                                     directory = loss_directory,
-                                     plotid = paste0(r$tabname,'liveplot'),
-                                     batchpbid = paste0(r$tabname,"batchpb"),
-                                     batchamount = samples,
-                                     epochpbid = paste0(r$tabname,"epochpb"),
-                                     epochamount = sf$epoch)
+              cd <- creatingcallback(
+                nmodel = modelbuilding,
+                session = session,
+                directory = loss_directory,
+                plotid = paste0(r$tabname,'liveplot'),
+                batchpbid = paste0(r$tabname,"batchpb"),
+                batchamount = samples,
+                epochpbid = paste0(r$tabname,"epochpb"),
+                epochamount = sf$epoch)
               
               #Fit the model
               model%>%
@@ -392,11 +398,11 @@ observeEvent(input$rcalculation,{
               #Save min, mean, max of predictions
               mmmpred <- toJSON(toJSON(mmmpred))
               mmmpred <- paste0('var modelpred = ',mmmpred,';')
-              writeLines(mmmpred,paste0(dashdatamodelpath,'/mmmpred.json'), useBytes = T)
+              writeLines(mmmpred,paste0(dashdatamodelpath,'/mmmpred.js'), useBytes = T)
               #Save training loss
               trainloss <- fromJSON(paste0(loss_directory,'/loss.json'))
               trainloss <- paste0('var modellosses = ["',trainloss,'"];')
-              write(trainloss,paste0(dashdatamodelpath,'/loss.json'))
+              write(trainloss,paste0(dashdatamodelpath,'/loss.js'))
               
               #Save loss of prediction
               Mloss <- gettingmetrics(
@@ -453,9 +459,6 @@ observeEvent(input$rcalculation,{
                   document.getElementById('",r$tabname,"content').innerHTML = ",
                              "'<embed type = \"text/html\" src = \"",htmldir,"/interactivedashb.html",
                              " \" style = \"height: 690px; width: 100%\">';
-                  document.querySelector('#downloaddash').classList.remove('disabled');
-                  document.querySelector('#downloaddash').removeAttribute('disabled');
-                  document.querySelector('#downloaddash + span').classList.remove('spanNOT');
                   document.querySelector('#downloadmodels + button').classList.remove('disabled');
                   document.querySelector('#downloadmodels + button').removeAttribute('disabled');
                   document.querySelector('#dragablepanelcontent').parentElement.style.display = 'block';
@@ -463,11 +466,13 @@ observeEvent(input$rcalculation,{
                   "))
                 modelBuilded <- list.files(paste0(exp_models,"/"))
                 modelBuilded <- gsub("model_","",modelBuilded)
+                if(length(modelBuilded) == 1){
+                  modelBuilded <- c("1" = 1)
+                }else{}
                 updatePickerInput(
                   session = session,
                   "downloadmodels",
-                  choices = modelBuilded,
-                  selected = NULL)
+                  choices = list("Dashboard" = "Dashboard","Models" = modelBuilded))
                 
               }
               
@@ -511,17 +516,18 @@ observeEvent(input$results_tabset,{
                          "/models/")
     modelBuilded <- list.files(modelspath)
     modelBuilded <- gsub("model_","",modelBuilded)
+    if(length(modelBuilded) == 1){
+      modelBuilded <- c("1" = 1)
+    }else{}
     updatePickerInput(
       session = session,
       "downloadmodels",
-      choices = modelBuilded,
-      selected = NULL)
+      choices = list("Dashboard" = "Dashboard","Models" = modelBuilded))
   }
   
 })
 
 r$collapseCDIV <- 0
-
 observeEvent(input$collapseDragDiv,{
   
   if(r$collapseCDIV == 0){
@@ -542,76 +548,52 @@ observeEvent(input$collapseDragDiv,{
     r$collapseCDIV <- 0
   }
   
-  if(r$dashboard == 'A' || r$modelsdir == 'A'){
-    if(r$dashboard == 'A'){
-      files <- r$modelsdir
-    }else{
-      files <- r$dashboard
-    }
-  }else{
-    files <- c(r$modelsdir,r$dashboard)
-  }
-  
-})
-
-r$dashboard <- "A"
-r$modelsdir <- 'A'
-
-observeEvent(input$downloaddash,{
-  if(input$downloaddash == T){
-    dashdir <- paste0("www/",session$token,"/",gsub(" ","",input$results_tabset),
-                      "/dashboard")
-    r$dashboard <- dashdir
-  }else{
-    r$dashboard <- "A"
-  }
-  
 })
 
 observeEvent(input$downloadmodels,{
-  if(!is.null(input$downloadmodels) && input$downloadmodels != ""){
+  
+  if(!is.null(input$downloadmodels)){
+    
+    r$files <- c()
+    startfiles <- 1
+    
+    if(is.element("Dashboard",input$downloadmodels)){
+      
+      dashdir <- paste0(
+        "www/",session$token,"/",gsub(" ","",input$results_tabset),"/dashboard")
+      r$files[1] <- dashdir
+      startfiles <- 2
+    }else{}
     modelspath <- paste0("www/",session$token,"/",gsub(" ","",input$results_tabset),
                          "/models/")
-    r$modelsdir <- c()
-    for (i in 1:length(input$downloadmodels)) {
-      r$modelsdir[i] <- paste0(modelspath,"model_",input$downloadmodels[i])
+    if(setequal(input$downloadmodels,"Dashboard")){
+      
+    }else{
+      for (i in startfiles:length(input$downloadmodels)) {
+        r$files[i] <- paste0(modelspath,"model_",input$downloadmodels[i])
+      }
     }
     
-  }else{
-    r$modelsdir <- 'A'
   }
   
 },ignoreNULL = F)
 
-observeEvent(c(input$downloaddash,input$downloadmodels),{
-  if(is.null(input$downloadmodels) && input$downloaddash ==  F){
+observeEvent(input$downloadmodels,{
+  if(is.null(input$downloadmodels)){
     disable('acceptdownload')
   }else{
-    if(input$downloadmodels == "" && input$downloaddash ==  F){
-      disable('acceptdownload')
-    }else{
-      enable('acceptdownload')
-    }
+    enable('acceptdownload')
   }
 },ignoreNULL = F)
 
 output$acceptdownload <- downloadHandler(
   filename = function(){
-    "Results.zip"
+    return("Results.zip")
   },
   content = function(file){
     
-    if(r$dashboard == 'A' || r$modelsdir == 'A'){
-      if(r$dashboard == 'A'){
-        files <- r$modelsdir
-      }else{
-        files <- r$dashboard
-      }
-    }else{
-      files <- c(r$modelsdir,r$dashboard)
-    }
-    
-    return(zipr(zipfile = file, files = files))
+    return(zip::zipr(zipfile = file, files = r$files))
+  
   },
   
   contentType = "application/zip"

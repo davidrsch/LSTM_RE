@@ -19,17 +19,11 @@ div(id = "Thirddiv",
       ),
       div(
         id = "dragablepanelcontent",
-        div(tags$b("Download")),
-        checkboxInput(
-          "downloaddash",
-          "Dashboard",
-          value = F
-        ),
         pickerInput(
           "downloadmodels",
-          "Models",
+          "Download:",
           choices = "",
-          selected = "",
+          selected = NULL,
           multiple = T,
           options = pickerOptions(
             style = "btn-default",
