@@ -674,6 +674,7 @@ HTML(
      e.onload = fn;
      e.id = id;
      e.src = url;
+     e.type = 'text/javascript';
      e.async = true;
      document.getElementsByTagName('head')[0].appendChild(e);
   
@@ -842,7 +843,7 @@ function PREDploting(data){
 
 $(window).on('load',function(){
      
-     var srcjs = './www/model_'+$('#plotmodelpick').val()+'/loss.json';
+     var srcjs = './www/model_'+$('#plotmodelpick').val()+'/loss.js';
      include(srcjs, 'modelloss', function(){
           var data = JSON.parse(modellosses);
           var xdata = [];
@@ -858,7 +859,7 @@ $(window).on('load',function(){
   
 $(window).on('load',function(){
      
-     var srcjs = './www/model_'+$('#plotmodelpick').val()+'/mmmpred.json';
+     var srcjs = './www/model_'+$('#plotmodelpick').val()+'/mmmpred.js';
      include(srcjs,'modelpredic', function(){
           var predictionsdf = JSON.parse(modelpred);
           
@@ -871,7 +872,7 @@ $(window).on('load',function(){
      
      var ele = $('#modelloss');
      ele.remove();
-     var srcjs = './www/model_'+$('#plotmodelpick').val()+'/loss.json';
+     var srcjs = './www/model_'+$('#plotmodelpick').val()+'/loss.js';
      include(srcjs, 'modelloss', function(){
           var data = JSON.parse(modellosses);
           var xdata = [];
@@ -888,7 +889,7 @@ $(window).on('load',function(){
   $('#plotmodelpick').on('changed.bs.select',function(){
     var ele = $('#modelpredic');
     ele.remove();
-    var srcjs = './www/model_'+$('#plotmodelpick').val()+'/mmmpred.json';
+    var srcjs = './www/model_'+$('#plotmodelpick').val()+'/mmmpred.js';
      include(srcjs,'modelpredic', function(){
           var predictionsdf = JSON.parse(modelpred);
           
