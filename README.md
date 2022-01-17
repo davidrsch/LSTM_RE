@@ -8,4 +8,4 @@ Launch application:
 shiny::runGitHub(repo = "davidrsch/LSTM-regressionexperiment", ref = "main")
 ```
 ![Wellcome page of app](https://drive.google.com/uc?export=view&id=1QZH10ptCKD1gm6AmW_UYZaAYBADoz47i)
-<a href = 'https://drive.google.com/uc?export=view&id=1m4dQZ4xrInTWYBbfvOA-8xz8FvcW4cGl'><img align='left' src = 'https://drive.google.com/uc?export=view&id=1Z66_53tz5VtXBUxkB0qEqrGDK9BvkbqP' width='25%' height = '2%'/></a>
+<a href = 'https://drive.google.com/uc?export=view&id=1m4dQZ4xrInTWYBbfvOA-8xz8FvcW4cGl' target='_blank' rel='noopener noreferrer'><img align='left' src = 'https://drive.google.com/uc?export=view&id=1Z66_53tz5VtXBUxkB0qEqrGDK9BvkbqP' width='25%' height = '2%'/></a>
