@@ -8,4 +8,10 @@ Launch application:
 shiny::runGitHub(repo = "davidrsch/LSTM-regressionexperiment", ref = "main")
 ```
 ![Wellcome page of app](https://drive.google.com/uc?export=view&id=1QZH10ptCKD1gm6AmW_UYZaAYBADoz47i)
-<a href = 'https://drive.google.com/uc?export=view&id=1m4dQZ4xrInTWYBbfvOA-8xz8FvcW4cGl' target='_blank' rel='noopener noreferrer'><img align='left' src = 'https://drive.google.com/uc?export=view&id=1Z66_53tz5VtXBUxkB0qEqrGDK9BvkbqP' width='25%' height = '2%'/></a>
+
+<p align = 'center'><b>Support:</b></p>
+<div align = 'center'>
+<a href = 'https://drive.google.com/uc?export=view&id=1qxCy-QLbhG8t_KakHSU24af0Z_CjzKBq'><img src = 'https://drive.google.com/uc?export=view&id=1Z66_53tz5VtXBUxkB0qEqrGDK9BvkbqP' width='25%' height = '2%'/></a>
+<a href = 'https://drive.google.com/uc?export=view&id=1cDTplii0HMth8ys6NSQjfLwL70i2TnC4'><img src = 'https://drive.google.com/uc?export=view&id=1O2OYSRznWTO05XRAF5egAZRHXVBtQS-J' width='25%' height = '2%'/></a>
+<a href = 'https://drive.google.com/uc?export=view&id=1U2vwzXhIWBMGT0LGw7RUPt9MxPG3iIBf'><img src = 'https://drive.google.com/uc?export=view&id=1k-Fo8gwwMxZzvEK6mRG9Om0_4BkdvkHn' width='25%' height = '2%'/></a>
+</div>
