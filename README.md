@@ -7,6 +7,8 @@ Launch application:
 ```r
 shiny::runGitHub(repo = "davidrsch/LSTM-regressionexperiment", ref = "main")
 ```
+or try it at [shinyapps.io](https://daviddrsch.shinyapps.io/experimentwithLSTMnetforTSforecast/).
+
 ![Wellcome page of app](https://drive.google.com/uc?export=view&id=1QZH10ptCKD1gm6AmW_UYZaAYBADoz47i)
 
 <p align = 'center'><b>Support:</b></p>
