@@ -742,7 +742,13 @@ HTML(
                      y: y,
                      name: name
                   }];
-                  
+      
+      if(typeof x[0] == 'string'){
+        var TickFor = '%m-%d-%Y';
+      }else{
+        var TickFor = ',d';
+      };
+      
       var layoutlossplot = {
                      margin: {
                        b: 40,
@@ -751,7 +757,7 @@ HTML(
                        r: 10
                      },
                      xaxis:{
-                       tickformat: ',d',
+                       tickformat: TickFor,
                        nticks: 10,
                        showgrid: true,
                        linecolor: 'black',

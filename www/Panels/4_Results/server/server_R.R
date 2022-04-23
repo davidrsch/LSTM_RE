@@ -1,3 +1,6 @@
+#SERVER CODE----
+#RESULTS PANEL----
+#1-Default style of UI ----
 observe({
   #establish results tab as disabled by default
   disable(selector = '#Main_tabsetpanel a[data-value = "Results"]')
@@ -9,23 +12,24 @@ observe({
   
 })
 
-#To store reactive values of results
+#2-To store results reactives values----
 r <- reactiveValues()
-#To store the number of the tab to create
+#3-Create experiment tab----
+##3.1-Storing the number of the tab to create----
 r$tab <- NULL
 r$calculation <- 0
 
-#To create UI when clicking repeat experimentation
+##3.2-Creating UI when clicking repeat experimentation----
 observeEvent(input$repeatexperimentation,{
   
   r$dashboard <- "A"
   r$modelsdir <- 'A'
   
-  #To enable results tab
+  ###3.2.1-Enabling results tab----
   enable(
     selector = '#Main_tabsetpanel a[data-value = "Results"]')
   
-  #To go to result tab
+  ##3.2.2-Going to result tab----
   updateTabsetPanel(
     session,
     'Main_tabsetpanel',
@@ -45,6 +49,7 @@ observeEvent(input$repeatexperimentation,{
   tabname <- paste0(" ",as.character(r$tab),substright(ordinal(r$tab),2)," ")
   r$tabname <- paste0(as.character(r$tab),substright(ordinal(r$tab),2))
   
+  ##3.2.3-Inserting new tab----
   insertTab(
     session = session,
     inputId = "results_tabset",
@@ -53,15 +58,17 @@ observeEvent(input$repeatexperimentation,{
       div(
         id = paste0(r$tabname,"content"),
         fluidRow(
+          ###a)-Left side----
           column(2),
+          ###b)-Center----
           column(
             width = 8,
             wellPanel(
-              #Container of model features table
+              ####b.1)-Container of model features table----
               div(id = paste0(r$tabname,'htmlmodelfeatT'),
                   style = "margin-bottom: 4px"),
               
-              #Container of live fit plot
+              ####b.2)-Container of live fit plot----
               div(
                 id = paste0(r$tabname,"livefitpcon"),
                 
@@ -70,7 +77,7 @@ observeEvent(input$repeatexperimentation,{
                   height = "290px")
               ),
               
-              #Container of progress bars
+              ####b.3)-Container of progress bars----
               div(
                 id = paste0(r$tabname,'containingpbs'),
                 #Progress bar for samples
@@ -101,13 +108,13 @@ observeEvent(input$repeatexperimentation,{
                 
               ),
               
-              #Style of the well panel inside the main panel
+              ####b.4)-Style of the center panel inside the main panel----
               style = "background-color: white;
               border-color:black;border-radius:0;
               height:100%; margin-top: 1%"
             )
           ),
-          
+          ###c)-Right side----
           column(2),
           style = "height:480px"
         )
@@ -116,13 +123,13 @@ observeEvent(input$repeatexperimentation,{
     )
   )
   
-  #To select the inserted tab
+  ##3.2.4-To select the inserted tab----
   updateTabsetPanel(
     session = session,
     inputId = "results_tabset",
     selected = paste0(" ",r$tabname," "))
   
-  
+  ##3.2.5-Creating empty liveplot output----
   output[[paste0(r$tabname,'liveplot')]] <- renderPlotly({
     p <- plotly_empty() %>%
       config(displayModeBar = F) %>% 
@@ -136,6 +143,8 @@ observeEvent(input$repeatexperimentation,{
   
 })
 
+#4-Experimentation----
+##4.1-Individual path of directory----
 #Store individual path directory
 r$path_of_directorio <- paste0("www/",session$token)
 #Create individual path directory
@@ -145,11 +154,9 @@ observe({
 
 #To calculate when clicking repeat experimentation
 observeEvent(input$rcalculation,{
-  
+
   if(input$rcalculation == 1){
-    
-    #Store the individual directory path
-    #path_of_directorio <- paste0("www/",session$token)
+    ##4.2-Creating folders to save results----
     #Store experimentation directory path
     exp_directory <- paste0(r$path_of_directorio,"/",r$tabname)
     #Store models directory path
@@ -161,8 +168,6 @@ observeEvent(input$rcalculation,{
     #Store loss directory path
     loss_directory <- paste0(r$path_of_directorio,'/plotdata/')
     
-    #Create individual directory
-    #dir.create(path_of_directorio)
     #Create experimentation directory
     dir.create(exp_directory)
     #Create models directory
@@ -173,7 +178,6 @@ observeEvent(input$rcalculation,{
     dir.create(exp_dashdata)
     #Create the directory for the loss live_plot data
     dir.create(loss_directory)
-    
     amountofts <- dim(sf$selectedtrains)[1]
     amountoftf <- length(sf$tstransform)
     amountofsc <- length(sf$tsscales)
@@ -181,7 +185,8 @@ observeEvent(input$rcalculation,{
     amountofmodels <- dim(sf$modelstablecopy)[1]
     amountoftotalmodels <- amountofts * amountoftf * amountofsc * amountofinps *amountofmodels
     modelbuilding <- 0
-    #To update style of progress value
+    
+    ##4.3-Update style of progress value----
     html(
       paste0(r$tabname,'containingpbs'),
       "<style>.progress-number{
@@ -191,13 +196,13 @@ observeEvent(input$rcalculation,{
       add = T
     )
     
-    #Experimentation
-    #Setting seed
+    ##4.4-Setting seed----
     if(sf$setseed == T){
       set.seed(sf$seed)
     }
     
-    #TS
+    ##4.5-Creating vectors----
+    ###4.5.1-Time series----
     for (i in 1:amountofts) {
       
       ts <- createts(
@@ -209,17 +214,15 @@ observeEvent(input$rcalculation,{
       
       set <- sf$selectedtrains[i,1]
       
-      #Transform TS
+      ###4.5.2-Transformed time series----
       for (tf in 1:amountoftf) {
-        
         transfts <- createtrfts(
           TS =  ts,
           trf = sf$tstransform,
           ntrf = tf)
-        
         trf <- sf$tstransform[tf]
         
-        #Scale TS
+        ###4.5.3-Scaled timeseries----
         for (sc in 1:amountofsc) {
           
           scts <- createscts(
@@ -229,7 +232,7 @@ observeEvent(input$rcalculation,{
           
           sca <- sf$tsscales[sc]
           
-          #Create vectors
+          ###4.5.4-Creating vectors----
           for(input in 1:amountofinps){
             
             steps <- as.numeric(sf$inpvec[input]) + sf$tmph
@@ -245,22 +248,29 @@ observeEvent(input$rcalculation,{
             
             vector <- threedvectfunc(tstv[,,drop=F],steps,c(1,dim(tstv)[1]))
             starttest <- which(tstv[[1]] == sf$teststart)
-            truetestvector <- vector[(starttest-steps+1):dim(vector)[1],,-1,drop = F]
+            truetestvector <- type.convert(
+              vector[(starttest-steps+1):dim(vector)[1],,-1,drop = F],
+              as.is=T)
             date3dtest <- vector[(starttest-steps+1):dim(vector)[1],,1,drop = F]
             
             vector <- threedvectfunc(scts[,-1,drop=F], steps, c(1,dim(scts)[1]))
             starttest <- which(scts[[1]] == sf$teststart)
-            trainvector <- vector[1:(starttest-steps),,,drop = F]
-            testvector <- vector[(starttest-steps+1):dim(vector)[1],,,drop = F]
+            trainvector <- type.convert(
+              vector[1:(starttest-steps),,,drop = F],
+              as.is=T)
+            testvector <- type.convert(
+              vector[(starttest-steps+1):dim(vector)[1],,,drop = F],
+              as.is=T)
             inp <- sf$grid %>% filter(Inputs == 1) %>% select(Variables)
             inp <- whichequalvec(names(scts[,-1,drop=F]), inp[[1]])
             out <- sf$grid %>% filter(Outputs == 1) %>% select(Variables)
             out <- whichequalvec(names(scts[,-1,drop=F]), out[[1]])
+            
             date3dtest <- date3dtest[,
                                      (as.numeric(sf$inpvec[input]) + 1):dim(testvector)[2],
                                      ,
                                      drop = F]
-            
+            ##4.6-Building, fiting and testing models----
             for (m in 1:amountofmodels) {
               #Model that it is been build from total
               modelbuilding <- modelbuilding + 1
@@ -379,16 +389,19 @@ observeEvent(input$rcalculation,{
                 scale = sca,
                 transformation = trf,
                 transfTS = transfts)
-              
+              ##4.7-Saving models and results----
               #Creating model path
               model_directorio <- paste0(savemodelpath,"/model",modelbuilding,".hdf5")
               #Save model
               model%>%save_model_hdf5(model_directorio)
               #Save predictions
-              #write_json(toJSON(predictions),paste0(modelpath,'/prediction.json'))
               #Calculating min. mean and max of predictions
               outputwithdate <- abind(date3dtest,predictions, along = 3)
-              date2d <- unique(as.vector(outputwithdate[,,1]))
+              outputwithdateX <- as.list(outputwithdate)
+              dim(outputwithdateX) <- dim(outputwithdate)
+              outputwithdate <- type.convert(outputwithdateX,as.is = T)
+              date2d <- unique(as.matrix(outputwithdate[,,1]))
+              
               mmmpred <- creatingplotpreddf(
                 threddata = outputwithdate,
                 xdata = date2d,
@@ -403,7 +416,6 @@ observeEvent(input$rcalculation,{
               trainloss <- fromJSON(paste0(loss_directory,'/loss.json'))
               trainloss <- paste0('var modellosses = ["',trainloss,'"];')
               write(trainloss,paste0(dashdatamodelpath,'/loss.js'))
-              
               #Save loss of prediction
               Mloss <- gettingmetrics(
                 truetestvector[,
@@ -462,7 +474,7 @@ observeEvent(input$rcalculation,{
                   document.querySelector('#downloadmodels + button').classList.remove('disabled');
                   document.querySelector('#downloadmodels + button').removeAttribute('disabled');
                   document.querySelector('#dragablepanelcontent').parentElement.style.display = 'block';
-                  
+
                   "))
                 modelBuilded <- list.files(paste0(exp_models,"/"))
                 modelBuilded <- gsub("model_","",modelBuilded)
@@ -497,6 +509,10 @@ observeEvent(input$rcalculation,{
   
 })
 
+
+#5-Action on result tabset----
+#Enable or disable download based on the existence of
+#interactivedashb.html file
 observeEvent(input$results_tabset,{
   htmldir <- paste0(r$path_of_directorio,"/",
                     gsub(" ","",input$results_tabset),
@@ -527,6 +543,8 @@ observeEvent(input$results_tabset,{
   
 })
 
+#6-Collapsable - dragable panel----
+##6.1-Collapse button----
 r$collapseCDIV <- 0
 observeEvent(input$collapseDragDiv,{
   
@@ -549,7 +567,8 @@ observeEvent(input$collapseDragDiv,{
   }
   
 })
-
+##6.2-Download button----
+###6.2.1-Create files to download----
 observeEvent(input$downloadmodels,{
   
   if(!is.null(input$downloadmodels)){
@@ -578,6 +597,7 @@ observeEvent(input$downloadmodels,{
   
 },ignoreNULL = F)
 
+###6.2.2-Enable or disable download----
 observeEvent(input$downloadmodels,{
   if(is.null(input$downloadmodels)){
     disable('acceptdownload')
@@ -586,6 +606,7 @@ observeEvent(input$downloadmodels,{
   }
 },ignoreNULL = F)
 
+###6.2.3-Download handler----
 output$acceptdownload <- downloadHandler(
   filename = function(){
     return("Results.zip")
@@ -599,6 +620,7 @@ output$acceptdownload <- downloadHandler(
   contentType = "application/zip"
 )
 
+#7-Delete directory when session end----
 session$onSessionEnded(function(){
   unlink(paste0("www/",session$token), recursive = TRUE)
 })

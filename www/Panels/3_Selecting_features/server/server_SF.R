@@ -1,5 +1,7 @@
-
-
+#SERVER CODE----
+#SELECTING FEATURES----
+#PANEL----
+#1-Default style of UI ----
 observe({
   #establish selecting features tab as disabled by default
   disable(selector = '#Main_tabsetpanel a[data-value = "Selecting Features"]')
@@ -12,7 +14,7 @@ observe({
   
   
 })
-
+#2-Enabling UI tab----
 #To enable selecting features tab if a proper start training period is added
 observeEvent(input$adtraintotest,{
   if(is.null(input$selectteststart) ||
@@ -26,16 +28,26 @@ observeEvent(input$adtraintotest,{
   
 })
 
+
+#3-To store selecting features reactive values----
+sf <- reactiveValues()
+#4-Transformations dropdown----
+##4.1-Selecting ts and scale explanation tab----
+observeEvent(input$ts_and_scales_dd,{
+  updateTabsetPanel(session = session,
+                    'Proposal_tabsetPanel',
+                    selected = "TS_and_scales_opt_tabPanel")
+  
+})
+##4.2-Reactive value to store transformations----
+sf$transf <- c("Original",
+               "First transformation",
+               "Second transformation")
+##4.3-Enabling or no transf----
 #To update if necessary the picker transformations. Picker transformations will
 #be updated if.
 #   Any ts has values equal or smaller than 0
 #   Any ts is stationary
-
-#To store selecting features reactive values
-sf <- reactiveValues()
-sf$transf <- c("Original",
-               "First transformation",
-               "Second transformation")
 observeEvent(input$Main_tabsetpanel,{
   if(input$Main_tabsetpanel == "Selecting Features"){
     
@@ -111,32 +123,26 @@ observeEvent(input$Main_tabsetpanel,{
   }
 })
 
-#To select ts and scale explanation tab
-observeEvent(input$ts_and_scales_dd,{
-  updateTabsetPanel(session = session,
-                    'Proposal_tabsetPanel',
-                    selected = "TS_and_scales_opt_tabPanel")
-  
-})
-
+##4.4-Storing transformation in RV----
 observeEvent(input$selectimeseries,{
   sf$transf <- input$selectimeseries
 })
 
-#To update tabset panel to training vectors explanation tab
+#5-Training vectors dopdown----
+##5.1-Selecting training vectors explanation tab----
 observeEvent(input$tv_opt_dd,{
   updateTabsetPanel(session,
                     'Proposal_tabsetPanel',
                     selected = "Training_vectors_tabPanel")
 })
 
-
+##5.2-Reactive values of training vectors----
 #To store input amounts of training vectors
 sf$inputamnts <- NULL
 #To store selected inputs amounts of training vectors
 sf$stdinputamnts <- NULL
 
-#Action to do when accepting an input amount
+##5.3-Accepting an input amount----
 observeEvent(input$acceptinputoptionbutton,{
   
   #To trigger error alert if introduced input amount not fulfill conditions
@@ -168,24 +174,26 @@ observeEvent(input$acceptinputoptionbutton,{
   
 })
 
-#update selected inputs values when selecting or deselecting
+##5.4-Updating selected inputs values when selecting or deselecting----
 observeEvent(input$selectinputoptions,{
   sf$stdinputamnts <- input$selectinputoptions
 })
 
-#To update tabset panel to models explanation tab
+#6-Models dropdown----
+##6.1-Selecting models explanation tab----
 observeEvent(input$models_opt_dd,{
   updateTabsetPanel(session,
                     'Proposal_tabsetPanel',
                     selected = 'Moedels_tabPanel')
 })
 
+##6.2-Reactive values to LSTM----
 #To store LSTM layers amounts
 sf$LSTMamnts <- NULL
 #To store selected LSTM layers amounts
 sf$stdLSTMamnts <- NULL
 
-#Action when accepting a LSTM layer amount
+##6.3-Accepting a LSTM layer amount----
 observeEvent(input$acceptLSTMamountbutton,{
   
   #To trigger error alert if introduced LSTM layer amount not fulfill conditions
@@ -218,17 +226,18 @@ observeEvent(input$acceptLSTMamountbutton,{
   
 })
 
-#update selected LSTM layers when selecting or deselecting
+##6.4-Updating selected LSTM layers when selecting or deselecting----
 observeEvent(input$selectLSTMsoptions,{
   sf$stdLSTMamnts <- input$selectLSTMsoptions
 })
 
+##6.5-Reactive values to Neurons amount----
 #To store neurons amounts
 sf$neuronsamnts <- NULL
 #To store selected neurons amounts
 sf$stdneuronsamnts <- NULL
 
-#Action when accepting a neuron amount
+##6.6-Accepting a neuron amount----
 observeEvent(input$acceptneuronamountbutton,{
   #To trigger error alert if introduced neuron amount not fulfill conditions
   #   integer and bigger than 0
@@ -260,19 +269,20 @@ observeEvent(input$acceptneuronamountbutton,{
   
 })
 
-#update selected neurons amounts when selecting or deselecting
+##6.7-Updating selected neurons amounts when selecting or deselecting----
 observeEvent(input$selectneuronsoptions,{
   sf$stdneuronsamnts <- input$selectneuronsoptions
 })
 
-#To update tabset panel to training explanation tab
+#7-Training dropdown----
+##7.1-Selecting training explanation tab----
 observeEvent(input$training_opt_dd,{
   updateTabsetPanel(session,
                     'Proposal_tabsetPanel',
                     selected = "Training_options_tabPanel")
 })
 
-#To disable or enable seed based on use seed configuration
+##7.2-Enabling seed based on use seed configuration----
 observeEvent(input$setseed,{
   if(input$setseed == T){
     enable("seed")
@@ -281,9 +291,10 @@ observeEvent(input$setseed,{
   }
 })
 
-#To store models to build by each training vector
+#8-Starting experimentation----
+##8.1-Reactive value to store models to build by each training vector----
 sf$modelstable <- NULL
-#Action when starting experimentation
+##8.2-Action when starting experimentation----
 observeEvent(input$startexperimentation,{
   #Trigger an alert if:
   #   There is no a ts selected
@@ -348,7 +359,8 @@ observeEvent(input$startexperimentation,{
   
 })
 
-#To update models table, text and ok button when user modify the amount of model
+##8.3-Models table----
+###8.3.1-Updating models table, text and ok button when user modify the amount of model----
 observeEvent(c(input$startexperimentation,sf$modelstable),{
   
   if(!is.null(sf$modelstable)){
@@ -391,7 +403,7 @@ observeEvent(c(input$startexperimentation,sf$modelstable),{
   
 })
 
-#To eliminate options of select models table
+###8.3.2-Eliminating options of select models table----
 observeEvent(input$eliminatemodel,{
   rwstr <- input$modelestable_rows_selected
   sf$modelstable <- sf$modelstable %>%
@@ -399,14 +411,14 @@ observeEvent(input$eliminatemodel,{
   
 })
 
-#To remove modal when canceling
+###8.3.3-Canceling models table modal----
 observeEvent(input$cancelmodels,{
   removeModal()
 })
-
-#To store copy of models to build
+#9-Acepting models to build----
+##9.1-Reactive value to store copy of models to build----
 sf$modelstablecopy <- NULL
-#To do when accepting models to build
+##9.2-Accepting models to build----
 observeEvent(input$acceptmodels,{
   removeModal()
   #To copy Xdata

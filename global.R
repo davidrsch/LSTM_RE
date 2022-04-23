@@ -1,4 +1,6 @@
-#Possible file extensions:
+#GLOBAL OBJECTS----
+#(FUNC & VARS)----
+#01-Possible file extensions----
 #For text files
 readdelim <- c("text","csv","tsv","fwf")
 #For excel files
@@ -8,20 +10,51 @@ readall <- c(readdelim,readexcel)
 #Error classes
 errorclasses <- c("simpleError", "error", "condition")
 
-#Plot EDA function
-plotEDAfunc <- function(data){
-  higdata <- plotly::highlight_key(data)
-  p <- GGally::ggpairs(
-    higdata,
+#02-EDA functions----
+# plotEDAfunc <- function(data){
+#   higdata <- plotly::highlight_key(data)
+#   p <- GGally::ggpairs(
+#     higdata,
+#     title = 'Exploratory Data Analysis',
+#     lower = list(continuous = GGally::wrap("points",colour = "blue")),
+#     diag = list(continuous = GGally::wrap('densityDiag', color = "black", fill = "blue", alpha = 0.5)),
+#     upper = list(continuous = GGally::wrap('cor', size = 6))) +
+#     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+#   shiny::renderPlot(p)
+# }
+
+plotedafunc <- function(data){
+  library(ggplot2)
+  library(GGally)
+  p <- ggpairs(
+    data,
     title = 'Exploratory Data Analysis',
-    lower = list(continuous = GGally::wrap("points",colour = "blue")),
-    diag = list(continuous = GGally::wrap('densityDiag', color = "black", fill = "blue", alpha = 0.5)),
-    upper = list(continuous = GGally::wrap('cor', size = 6))) +
-    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
-  shiny::renderPlot(p)
+    lower = list(
+      continuous = wrap(
+        "points",
+        colour = "blue")),
+    diag = list(
+      continuous = wrap(
+        'densityDiag',
+        color = "black",
+        fill = "blue",
+        alpha = 0.5)),
+    upper = list(
+      continuous = wrap(
+        'cor',
+        size = 6))) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      text = element_text(size=15))
+  return(p)
 }
 
-#Alert when user start experimentation without all required parameters
+databasesum <- function(data){
+  library(pastecs)
+  stat.desc(data)
+}
+
+#03-Alert when user start experimentation without all required parameters----
 startalert <- tagList(
   div(
     p(
@@ -41,7 +74,7 @@ startalert <- tagList(
   )
 )
 
-#function to find models to build per vectors
+#04-Function to find models to build per vectors----
 findmodels <- function(lstm, neurons){
   
   for (i in 1:length(lstm)){
@@ -62,7 +95,7 @@ findmodels <- function(lstm, neurons){
   
 }
 
-#Function to build modal of models to build
+#05-Function to build modal of models to build----
 selectmodelstobuild <- function(train, ts, sc, vec, lstm, neu){
   amountoftrain <- dim(train)[1]
   if(dim(train)[1] == 1){
@@ -141,12 +174,12 @@ selectmodelstobuild <- function(train, ts, sc, vec, lstm, neu){
   return(text)
 }
 
-#To stract character from right to left
+#06-To stract character from right to left----
 substright <- function(x, n){
   substr(x,nchar(x)-n+1,nchar(x))
 }
 
-#To create time series
+#07-To create time series----
 createts <- function(Date, variables, sttrain, ntrain, endtt){
   df <- cbind(Date, variables)
   start <- which(df[[1]] == sttrain[ntrain, ][[1]])  
@@ -154,7 +187,7 @@ createts <- function(Date, variables, sttrain, ntrain, endtt){
   df <- df[start:end,]
 }
 
-#To create transformations
+#08-To create transformations----
 #First transformation
 firstrf <- function(TS){
   
@@ -192,6 +225,7 @@ firstrf <- function(TS){
   
   #To create the difference dataframe
   diffdf <- data.frame(diff(as.matrix(df),differences = diffvalue))
+  names(diffdf) <- names(TS)[-1]
   valstrm <- 1:diffvalue
   Date <- TS[[1]][-(valstrm)]
   DifV <- rep(diffvalue,length(Date))
@@ -215,7 +249,7 @@ secondtrf <- function(TS){
   return(logdf)
 }
 
-#Create transformed ts
+#09-Create transformed ts----
 createtrfts <- function(TS, trf, ntrf){
   
   if(trf[ntrf] == "Original"){
@@ -236,7 +270,7 @@ createtrfts <- function(TS, trf, ntrf){
   
 }
 
-#To create scaled TS
+#10-To create scaled TS----
 #To rescale data frames
 rescaledf <- function(x, to){
   
@@ -248,6 +282,7 @@ rescaledf <- function(x, to){
       datfra <- cbind(datfra,df)
     }
   }
+  
   colnames(datfra) <- names(x)
   return(datfra)
 }
@@ -301,7 +336,7 @@ createscts <- function(TS, sc, nsc){
   
 }
 
-#To create vectors
+#11-To create vectors----
 #3D vectors function
 threedvectfunc <- function(data, steps, datasample){
   if(is.data.frame(data)||is.matrix(data)){
@@ -321,7 +356,7 @@ threedvectfunc <- function(data, steps, datasample){
   return(threedrw)
 }
 
-#To search for inp and out
+#12-To search for inp and out----
 whichequalvec <- function(vec,equalto){
   for (i in 1:length(equalto)) {
     if(i == 1){
@@ -334,7 +369,7 @@ whichequalvec <- function(vec,equalto){
   return(x)
 }
 
-#To create models
+#13-To create models----
 createmodel <- function(structure, inputvec, outputvec){
   #In case of single LSTM layer
   if(dim(structure)[2] == 1){
@@ -377,7 +412,7 @@ createmodel <- function(structure, inputvec, outputvec){
   return(model)
   
 }
-#To create table of models
+#14-To create table of models----
 #To paste characters inside a vector
 pastevec <- function(vect){
   for (i in 1:length(vect)) {
@@ -430,7 +465,7 @@ htmlTable <- function(df){
   return(x)
 }
 
-#Creating callback
+#15-Creating callback----
 # Callback function:
 #   - On batch and epoch begin:
 updatingpg = function(session,pgbid,amount,item){
@@ -604,7 +639,7 @@ creatingcallback <- function(nmodel,
   
 }
 
-#To test model
+#16-To test model----
 # - Transforming 3d vectors to 2d vector by droping the first dimension
 from3dto2d <-function(vec3d){
   
@@ -622,10 +657,12 @@ from3dto2d <-function(vec3d){
 
 # - Inverting difference of 3d vector (predictions)
 diffinv3d <- function(data3d, difference, lastknow3d){
+  
   data2d <- from3dto2d(data3d)
   lastknow2d <- from3dto2d(lastknow3d)
   datastepspersample <- dim(data2d)[1]/dim(data3d)[1]
   lastknowsteppersample <- dim(lastknow2d)[1]/dim(lastknow3d)[1]
+  
   for (sample in 1:dim(data3d)[1]) {
     datastartsample <- ((datastepspersample * sample) - datastepspersample) + 1
     dataendsample <- datastepspersample * sample
@@ -643,6 +680,7 @@ diffinv3d <- function(data3d, difference, lastknow3d){
       invertedarray <- abind(invertedarray,invert3d, along = 1)
     }
   }
+  
   stepstoselect <- (dim(invertedarray)[2]-dim(data3d)[2]+1) : dim(invertedarray)[2]
   invertedarray <- invertedarray[,stepstoselect,,drop = F]
   return(invertedarray)
@@ -661,7 +699,6 @@ predictwkeras <- function(Model,
   
   modeltouse <- Model
   for (samples in 1:dim(inputs)[1]) {
-    
     inputss <- inputs[samples,,,drop=F]
     predictions <- predict(modeltouse,inputss)
     #Commented to no update model
@@ -682,11 +719,13 @@ predictwkeras <- function(Model,
     }else{
       if(scale == "From 0 to 1"){
         predictions <- rescale(predictions,
-                               to = c(min(transfTS),max(transfTS)),
-                               from = c(0,1))}
+                               to = c(min(transfTS[,-1]),max(transfTS[,-1])),
+                               from = c(0,1))
+        
+        }
       else{
         predictions <- rescale(predictions,
-                               to = c(min(transfTS),max(transfTS)),
+                               to = c(min(transfTS[,-1]),max(transfTS[,-1])),
                                from = c(-1,1))
       }
     }
@@ -734,14 +773,14 @@ creatingplotpreddf <- function(threddata, xdata, colnames){
   for (col in 1:length(colnames)){
     
     for(date in 1:length(xdata)){
-      data3d <- as.data.frame(threddata[,,1])
+      data3d <- as.data.frame(as.matrix(threddata[,,1]))
       rowcolar <- which(data3d == xdata[date], arr.ind = T)
       rowcolar <- as.data.frame(rowcolar)
       rowcolar <- arrange(rowcolar,row)
       
       for (combofrowcol in 1:dim(rowcolar)[1]) {
         rowcol <- as.vector(as.matrix(rowcolar[combofrowcol,]))
-        pred <- threddata[rowcol[1],rowcol[2],1+col]
+        pred <- as.matrix(threddata[rowcol[1],rowcol[2],1+col])[[1]]
         if(combofrowcol == 1){
           predict <- pred
         }else{
@@ -749,11 +788,9 @@ creatingplotpreddf <- function(threddata, xdata, colnames){
         }
         
       }
-      
       if(length(predict) < dim(threddata)[2]){
         predict <- c(predict,rep(NaN,dim(threddata)[2]-length(predict)))
       }
-      
       if(date == 1){
         predictions <- data.frame(t(predict))
       }else{
@@ -788,3 +825,5 @@ creatingplotpreddf <- function(threddata, xdata, colnames){
   }
   return(datapredfin)
 }
+
+  

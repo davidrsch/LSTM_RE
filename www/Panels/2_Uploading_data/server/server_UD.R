@@ -1,3 +1,6 @@
+#SERVER CODE ----
+#UPLOADIN DATA PANEL----
+#01-Default style of UI ----
 observe({
   #Set disable as default to imported files options dropdown
   disable("imported_DD")
@@ -37,6 +40,7 @@ observe({
   
 })
 
+#02-Enable or not imptd fil opts ----
 #To enable or no the Imported file options 
 #if a file with the proper extension is imported
 observeEvent(input$file, {
@@ -74,7 +78,7 @@ observeEvent(input$file, {
   }
 })
 
-#To upload file
+#03-To upload file ----
 output$fileupload <- renderUI({
   if(is.null(input$file))
     tags$h4(tags$strong("Upload file"), align = "center", style = "color:black")
@@ -86,16 +90,17 @@ output$fileupload <- renderUI({
   
 })
 
-#Imported file name
+#04-Imported file name ----
 output$filename <- renderUI({
   tags$h5(tags$strong(input$file$name), align = "center")
 })
 
-#Imported file table
-#Reactive value to store the imported file
+#05-Imported file table----
+##5.1-Reactive value to store the imported file----
 database <- reactiveValues()
 database$df <- data.frame()
 
+## 5.2-Giving value to reactive value----
 #Giving value to reactive database$df in dependency of the imported file
 #and the imported file options selected by the user
 observeEvent(c(input$file,input$header,input$delimiter,input$dm),{
@@ -124,7 +129,7 @@ observeEvent(c(input$file,input$header,input$delimiter,input$dm),{
   }
 })
 
-#Rendering the imported database stored in reactive value
+## 5.3-Rendering the imported database stored in reactive value----
 output$files <- renderDataTable(
   database$df,
   options = list(searching = F,
@@ -135,7 +140,7 @@ output$files <- renderDataTable(
                  ordering = F),
   class = "nowrap hover order-column")
 
-#Update pickerInput datevariable
+## 5.4-Update pickerInput datevariable----
 observeEvent(database$df,{
   updatePickerInput(session = session,
                     inputId = "datevariable",
@@ -144,10 +149,10 @@ observeEvent(database$df,{
   
 })
 
-#Creating input-output grid
-#Reactive value to store the grid
+#06-Creating input-output grid----
+##6.1-Reactive value to store the grid----
 database$grid <- data.frame()
-#Setin grid dataframe
+##6.2-Setting grid dataframe----
 observeEvent(c(database$df,input$datevariable),{
   if(is.null(input$datevariable)||input$datevariable==""){
     data <- database$df
@@ -162,7 +167,7 @@ observeEvent(c(database$df,input$datevariable),{
   
 })
 
-#Styling grid
+##6.3-Styling grid----
 output$io_gridtable <- renderRHandsontable({
   rhandsontable(database$grid,
                 disableVisualSelection = T,
@@ -170,11 +175,36 @@ output$io_gridtable <- renderRHandsontable({
     hot_col("Variables", readOnly = T)
 })
 
-#EDA plotting
+#07-EDA ----
+##7.1-Necessary reactive values----
 #To store EDA
 database$EDA <- data.frame()
 #To show EDA
 database$showEDA <- 0
+##7.2-Jobs creation----
+###7.2.1-Job of EDA ploting----
+edaploting <- eventReactive(database$EDA,{
+  data <- database$EDA
+  x <- r_bg(
+    func = plotedafunc,
+    args = list(data),
+    supervise = TRUE
+  )
+  return(x)
+})
+
+###7.2.2-Job of EDA summary----
+edasummary <- eventReactive(database$EDA,{
+  data <- database$EDA
+  x <- r_bg(
+    func = databasesum,
+    args = list(data),
+    supervise = T
+  )
+  return(x)
+})
+
+##7.3-Get selected variables----
 #EDA of selcted variables in gridtable
 observeEvent(input$io_gridtable,{
   if(any(hot_to_r(input$io_gridtable) == 1)){
@@ -205,38 +235,45 @@ observeEvent(input$io_gridtable,{
   }
 })
 
-#EDA render plot when clicking in grid table
-output$eda <- renderPlot({
-  data <- future_promise({database$EDA})
-  data %...>%{
-    data <- .
-    ggpairs(data,
-            title = 'Exploratory Data Analysis',
-            lower = list(continuous = wrap("points",colour = "blue")),
-            diag = list(continuous = wrap('densityDiag', color = "black", fill = "blue", alpha = 0.5)),
-            upper = list(continuous = wrap('cor', size = 6)))+
-      theme(plot.title = element_text(hjust = 0.5),
-            text = element_text(size=15))
+##7.4-Check jobs running----
+###7.4.1-EDA plot job checking if running----
+checkedaplot <- reactive({
+  if (edaploting()$is_alive()) {
+    invalidateLater(millis = 1000, session = session)
+    x <- "Job running in background"
+  } else {
+    x <- edaploting()$get_result()
   }
+  return(x)
 })
-
-#EDA render summary table when clicking in grid table
-output$summary <- renderDT({
-  data <- future_promise({database$EDA})
-  data %...>%{
-    data <- .
-    stat.desc(data)
+###7.4.2-EDA summary job checking if running----
+checkedasumm <- reactive({
+  if (edasummary()$is_alive()) {
+    invalidateLater(millis = 1000, session = session)
+    x <- "Job running in background"
+  } else {
+    x <- edasummary()$get_result()
   }
-},
-options = list(
-  dom = "t"
-),
+  return(x)
+})
+##7.5-Rendering job results----
+###7.5.1-Rendering EDA plot when finished----
+output$eda <- renderPlot({
+  checkedaplot()
+})
+###7.5.2-Rendering EDA summary when finished----
+output$summary <- renderDT({
+  checkedasumm()
+},options = list(
+  dom = "t"),
 class = "nowrap hover order-column")
 
-#Select dates-periods
-#To store the X axis(date-period)
+
+#08-Select dates-periods----
+##8.1-Reactives to store the X axis(date-period) ----
 database$Xdata <- NULL
 database$previousXdata <- NULL
+##8.2-Give value to reactive ----
 #When selectamounttouse dropdown is clicked X axis is stored either from a previously
 #selected variable or from a consecutive vector
 #Start test variable is 2nd on the stored x axis, start test variable will be limited
@@ -265,8 +302,10 @@ observeEvent(input$selectamounttouse,{
   
 })
 
+##8.3-Event on selecting start test----
+###8.3.1-Updating end test options----
 #When changing the selected start test date options of select end test date are
-#updated. test end date will be limited from (start test date + 1) to last period.
+#updated. Test end date will be limited from (start test date + 1) to last period.
 observeEvent(input$selectteststart,{
   Xdata <- database$Xdata
   start <- input$selectteststart
@@ -285,6 +324,7 @@ observeEvent(input$selectteststart,{
                     selected = selected2)
 })
 
+###8.3.2-Updating start train options----
 #When changing the selected start test date options of select start train date are
 #updated. start train date will be limited from 1st period to (start test date - 1).
 database$starttrainlevels <- NULL
@@ -308,10 +348,12 @@ observeEvent(input$selectteststart,{
                     selected = selected)
 })
 
+##8.4-Save selected periods----
 #To save selected train periods
 database$selectedtrains <- data.frame()
 #To show or no the Graphs tab
 database$showGraphs <- 0
+##8.5-Modify table of selectd periods----
 #When ok button to add a train period is clicked.
 #   * Will be checked if there are at least 1 input and 1 output variable and if
 #     if the test period has been defined
@@ -370,7 +412,7 @@ observeEvent(input$adtraintotest,{
     
   }
 })
-
+##8.6-Rendering table----
 #To render the table of the selected start train dates
 output$traindatestable <- renderDT({
   datatable(database$selectedtrains,
@@ -380,6 +422,7 @@ output$traindatestable <- renderDT({
             ))
 })
 
+#09-Eliminate periods options----
 #To eliminate options of select train start table
 observeEvent(input$eliminatetrainsd,{
   rwstr <- input$traindatestable_rows_selected
@@ -387,6 +430,7 @@ observeEvent(input$eliminatetrainsd,{
     slice(-rwstr)
 })
 
+#10-Plot of selected periods----
 #To create output of the start train and dates sets
 #It will be checked that there are at least 1 input and 1 output variable selected and
 #that there is at least 1 start train date selected.

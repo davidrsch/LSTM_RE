@@ -1,9 +1,15 @@
+#USER INTERFACE----
+#WELLCOME PANEL----
 tagList(
+  #Content of the Panel----
   fluidRow(
+    ##Left side (empty)----
     column(3),
+    ##Center----
     column(
       width = 6,
       div(
+        ###About app----
         tags$p("Power by",
                style = "font-size: 1.5em; color:black; margin: .5em 0 .3em 0;
                text-align:center"),
@@ -32,22 +38,32 @@ tagList(
                  " models and the resulting interactive dashboard."),
           style = "font-size: 16px; color: black; margin-top: 1%;"
         ),
+        ###Credits of app----
         tags$p("Created by",
                style = "font-size: 1.5em; color:black; margin: .5em 0 .3em 0"),
         tags$p("David Díaz Rodríguez",
                style = "font-size: 1.7em; color:black; margin:0"),
-        tags$a(href = "https://orcid.org/0000-0002-0927-9795", "0000 0002 0927 9795",
-               style = "font-size: 1.5em; margin: .5em 0 0 0"),
-        tags$br(),
+        ####Contact info----
+        #####01-Email----
         tags$a(href = "mailto:daviddrsch@gmail.com",
                tags$img(src = "logos/Gmail_logo.png",
                         style = "width: 2em; height: 2em"),
                style = "margin-right: .5em"),
+        #####02-Github----
         tags$a(href = "https://github.com/davidrsch",
                tags$img(src = "logos/GitHub_logo.png",
                         style = "width: 2em; height: 2em")),
+        #####03-LinkedIn----
         tags$a(href = "https://www.linkedin.com/in/david-díaz-6257951b8",
                tags$img(src = "logos/Linkedin_logo.png",
+                        style = "width: 2.1em; height: 2em; margin-left:.4em")),
+        #####04-Stackoverflow----
+        tags$a(href = "https://stackoverflow.com/users/12660035/david-d%c3%adaz?tab=profile",
+               tags$img(src = 'logos/Stackoverflow_logo.png',
+                        style = "width: 2.1em; height: 2em; margin-left:.4em")),
+        #####05-ORCid----
+        tags$a(href = "https://orcid.org/0000-0002-0927-9795",
+               tags$img(src = 'logos/ORCIDiD_logo.png',
                         style = "width: 2.1em; height: 2em; margin-left:.4em")),
         tags$br(),
         tags$br(),
@@ -55,6 +71,7 @@ tagList(
         overflow: auto"
       )
     ),
+    ##Right side (empty)----
     column(3)
   )
 )
