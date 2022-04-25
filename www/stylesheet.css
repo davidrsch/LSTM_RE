@@ -98,11 +98,10 @@
   min-width: 100%;
   width: auto;
   margin:0;
-  height: 215px;
 }
 
 #sw-content-input_output_grid > .sw-dropdown-in{
-  display: flex;
+  display: block;
   padding-right: 0;
 }
 
