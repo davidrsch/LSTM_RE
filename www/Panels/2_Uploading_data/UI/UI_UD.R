@@ -99,8 +99,67 @@ div(
             inputId = "input_output_grid",
             label = "Select variables",
             up = T,
-            #io grid table
-            rHandsontableOutput("io_gridtable")
+            ######3.2.1-Inputs-Outputs grid table----
+            rHandsontableOutput("io_gridtable"),
+            
+            #Space between io grid table and buttons
+            div(style = 'height: 1em;'),
+            
+            ######3.2.2-Select all buttons----
+            #Container of container of buttons
+            div(
+              #Container of select all buttons
+              div(
+                actionButton(
+                  'selectalli',
+                  'Inp'),
+                actionButton(
+                  'selectallo',
+                  'Out'),
+                #Style of container of select all buttons
+                style = 'width: 45%;
+                         display: flex;
+                         justify-content: center;'
+              ),
+              #Container of deselect all buttons
+              div(
+                actionButton(
+                  'deselectalli',
+                  'Inp'),
+                actionButton(
+                  'deselectallo',
+                  'Out'),
+                #Style of container of deselect all buttons
+                style = 'width: 45%;
+                         display: flex;
+                         justify-content: center;'
+              ),
+              #Style of container of container of buttons
+              style = 'display: flex;
+                       justify-content: space-between;'
+            ),
+            #Titles of buttons
+            div(
+              #Title of select all buttons
+              div(
+                div(
+                  style = 'height: 0.2em;'
+                ),
+                tags$b('Select All'),
+                style = 'width:45%'
+              ),
+              #Title of deselect all buttons
+              div(
+                div(
+                  style = 'height: 0.2em;'
+                ),
+                tags$b('Deselect All'),
+                style = 'width:45%'
+              ),
+              #Style of titles of buttons
+              style = 'display: flex;
+                       justify-content: space-between;'
+            )
           ),
            
           #Space between the io grid ddown and the select variables ddown

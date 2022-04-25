@@ -167,13 +167,16 @@ observeEvent(c(database$df,input$datevariable),{
   
 })
 
-##6.3-Styling grid----
-output$io_gridtable <- renderRHandsontable({
-  rhandsontable(database$grid,
-                disableVisualSelection = T,
-                height = 175) %>%
-    hot_col("Variables", readOnly = T)
+##6.3-Rendering grid----
+observeEvent(database$grid,{
+  output$io_gridtable <- renderRHandsontable({
+    rhandsontable(database$grid,
+                  disableVisualSelection = T,
+                  height = 175) %>%
+      hot_col("Variables", readOnly = T)
+  })
 })
+
 
 #07-EDA ----
 ##7.1-Necessary reactive values----
@@ -205,7 +208,7 @@ edasummary <- eventReactive(database$EDA,{
 })
 
 ##7.3-Get selected variables----
-#EDA of selcted variables in gridtable
+###7.3.1-Gridtable actions----
 observeEvent(input$io_gridtable,{
   if(any(hot_to_r(input$io_gridtable) == 1)){
     #To show and select EDA only if it is first time an input or output
@@ -234,13 +237,65 @@ observeEvent(input$io_gridtable,{
     }
   }
 })
+###7.3.2-Select all buttons----
+####a)-Inputs----
+observeEvent(input$selectalli,{
+  database$grid[,1] <- rep(T,dim(database$grid)[1])
+  data <- hot_to_r(input$io_gridtable)
+  outputsT <- which(data[,2],T)
+  outputs <- rep(F,dim(database$grid)[1])
+  outputs[outputsT] <- T
+  database$grid[,2] <- outputs
+})
+####b)-Outputs----
+observeEvent(input$selectallo,{
+  database$grid[,2] <- rep(T,dim(database$grid)[1])
+  data <- hot_to_r(input$io_gridtable)
+  inputsT <- which(data[,1],T)
+  inputs <- rep(F,dim(database$grid)[1])
+  inputs[inputsT] <- T
+  database$grid[,1] <- inputs
+  
+})
+###7.3.3-Deselect all buttons----
+####a)-Inputs----
+observeEvent(input$deselectalli,{
+  database$grid[,1] <- rep(F,dim(database$grid)[1])
+  data <- hot_to_r(input$io_gridtable)
+  outputsT <- which(data[,2],T)
+  outputs <- rep(F,dim(database$grid)[1])
+  outputs[outputsT] <- T
+  database$grid[,2] <- outputs
+  output$io_gridtable <- renderRHandsontable({
+    rhandsontable(database$grid,
+                  disableVisualSelection = T,
+                  height = 175) %>%
+      hot_col("Variables", readOnly = T)
+  })
+
+})
+####b)-Outputs----
+observeEvent(input$deselectallo,{
+  database$grid[,2] <- rep(F,dim(database$grid)[1])
+  data <- hot_to_r(input$io_gridtable)
+  inputsT <- which(data[,1],T)
+  inputs <- rep(F,dim(database$grid)[1])
+  inputs[inputsT] <- T
+  database$grid[,1] <- inputs
+  output$io_gridtable <- renderRHandsontable({
+    rhandsontable(database$grid,
+                  disableVisualSelection = T,
+                  height = 175) %>%
+      hot_col("Variables", readOnly = T)
+  })
+})
 
 ##7.4-Check jobs running----
 ###7.4.1-EDA plot job checking if running----
 checkedaplot <- reactive({
   if (edaploting()$is_alive()) {
     invalidateLater(millis = 1000, session = session)
-    x <- "Job running in background"
+    x <- ""
   } else {
     x <- edaploting()$get_result()
   }
@@ -250,7 +305,7 @@ checkedaplot <- reactive({
 checkedasumm <- reactive({
   if (edasummary()$is_alive()) {
     invalidateLater(millis = 1000, session = session)
-    x <- "Job running in background"
+    x <- ""
   } else {
     x <- edasummary()$get_result()
   }
