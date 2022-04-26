@@ -54,11 +54,11 @@ tagList(
                tags$img(src = "logos/GitHub_logo.png",
                         style = "width: 2em; height: 2em")),
         #####03-LinkedIn----
-        tags$a(href = "https://www.linkedin.com/in/david-díaz-6257951b8",
+        tags$a(href = "https://www.linkedin.com/in/david-d-6257951b8",
                tags$img(src = "logos/Linkedin_logo.png",
                         style = "width: 2.1em; height: 2em; margin-left:.4em")),
         #####04-Stackoverflow----
-        tags$a(href = "https://stackoverflow.com/users/12660035/david-d%c3%adaz?tab=profile",
+        tags$a(href = "https://stackoverflow.com/users/12660035/",
                tags$img(src = 'logos/Stackoverflow_logo.png',
                         style = "width: 2.1em; height: 2em; margin-left:.4em")),
         #####05-ORCid----

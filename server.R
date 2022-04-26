@@ -1,4 +1,4 @@
-#UI CODE----
+#SERVER CODE----
 server <- function(input, output, session) {
   ###01-Uploading data server code----
   source(file = "www/Panels/2_Uploading_data/server/server_UD.R", local = T)

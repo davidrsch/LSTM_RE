@@ -344,7 +344,7 @@ observeEvent(input$selectamounttouse,{
   }
   if(length(database$Xdata) == dim(database$EDA)[1]){
     if(is.null(database$previousXdata) ||
-       database$previousXdata != database$Xdata){
+       !identical(database$previousXdata, database$Xdata)){
       database$previousXdata <- database$Xdata
       updatePickerInput(session,
                         'selectteststart',
@@ -493,88 +493,41 @@ observeEvent(input$eliminatetrainsd,{
 #The plot will consist of all the variables and it train and test periods.
 #The grid plot will be updated whit any change in the selected start train periods and
 #any change regarding the selected variables.
-observeEvent(c(input$adtraintotest,input$io_gridtable, input$eliminatetrainsd),{
+##10.1-Job creation----
+
+SPVplot <- eventReactive(
+  c(input$adtraintotest,input$io_gridtable, input$eliminatetrainsd),{
   
   if(dim(database$selectedtrains)[1]>0 &&
      any(hot_to_r(input$io_gridtable)$Inputs == 1) &&
      any(hot_to_r(input$io_gridtable)$Outputs == 1)){
     
-    for (i1 in 1:dim(database$selectedtrains)[1]) {
-      outputname <- paste0('plotof',i1)
-      if(!(i1%%2) == 0){
-        element <- tagList(
-          div(
-            plotlyOutput(outputname),
-            style = "float:left; width:48%;"
-          )
-        )
-        
-      }else{
-        element <- tagList(
-          div(
-            plotlyOutput(outputname),
-            style = "float:right; width:48%;"
-          )
-        )
-      }
-      
-      if(i1 == 1){
-        
-        database$SVplots <- element
-        
-      }else{
-        
-        database$SVplots <- tagList(database$SVplots,element)
-      }
-      
-      output$plotselectedvariables <- renderUI({
-        database$SVplots
-      })
-      
-      local({
-        
-        p <- plot_ly(type = "scatter", mode = "lines") %>%
-          config(displayModeBar = F)
-        
-        for (i2 in 1:dim(database$EDA)[2]) {
-          stn <- which(database$Xdata == database$selectedtrains[i1,])
-          stt <- which(database$Xdata == input$selectteststart)
-          x1 <- database$Xdata[stn:stt]
-          y1 <- database$EDA[stn:stt,i2][[1]]
-          p <- p %>% add_trace(
-            x = x1,
-            y = y1,
-            mode = "lines",
-            legendgroup = colnames(database$EDA)[i2],
-            legendgrouptitle = list(text = colnames(database$EDA)[i2]),
-            name = 'train')
-          
-          linegtcolr <- i2 * 2
-          
-          ptogtcolr <- plotly_build(p)
-          nxtlinecolor <- ptogtcolr$x$data[[linegtcolr]]$line$color[1]
-          ett <- which(database$Xdata == input$selecttestend)
-          x2 <- database$Xdata[stt:ett]
-          y2 <- database$EDA[stt:ett,i2][[1]]
-          
-          p <- p %>% add_trace(
-            x = x2,
-            y = y2,
-            mode = "lines",
-            legendgroup = colnames(database$EDA)[i2],
-            name = 'test',
-            line = list(dash = "dash",
-                        color = nxtlinecolor))
-          
-        }
-        
-        output[[outputname]] <- renderPlotly({
-          
-          p 
-          
-        })
-        
-      })
-    }
+    x <- r_bg(
+      func = Setsvarsplots,
+      args = list(
+        database$selectedtrains,
+        database$EDA,
+        database$Xdata,
+        input$selectteststart,
+        input$selecttestend),
+      supervise = TRUE
+    )
+    return(x)
+    
   }
+})
+##10.2-Check if SPVplot is running----
+checkSPVplot <- reactive({
+  if (SPVplot()$is_alive()) {
+    invalidateLater(millis = 1000, session = session)
+    x <- ""
+  } else {
+    x <- SPVplot()$get_result()
+  }
+  return(x)
+})
+
+##10.3-Rendering----
+output$plotselectedvariables <- renderUI({
+    checkSPVplot()
 })

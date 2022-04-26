@@ -347,9 +347,11 @@ div(
               title = "Graphs",
               #Selected variables plot grid
               div(
-                uiOutput(
-                  "plotselectedvariables",
-                  style = "margin-left: -1em; margin-right: -1em"),
+                withSpinner(
+                  uiOutput(
+                    "plotselectedvariables",
+                    style = "margin-left: -1em; margin-right: -1em")
+                ),
                 style = "margin: 2% 0 0 0;
                         height: 400px; overflow:auto"
               )

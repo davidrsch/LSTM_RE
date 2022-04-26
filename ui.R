@@ -21,7 +21,7 @@
 #CREATOR INFO:----
 # - Name: David Díaz Rodríguez
 # - Email: daviddrsch@gmail.com
-# - LinkedIn: https://www.linkedin.com/in/david-díaz-rodríguez-6257951b8
+# - LinkedIn: https://www.linkedin.com/in/david-d-6257951b8
 # - GitHub: https://github.com/davidrsch
 # - Stackoverflow: https://stackoverflow.com/users/12660035/
 # - ORCid:  https://orcid.org/0000-0002-0927-9795

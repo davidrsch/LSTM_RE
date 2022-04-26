@@ -11,18 +11,6 @@ readall <- c(readdelim,readexcel)
 errorclasses <- c("simpleError", "error", "condition")
 
 #02-EDA functions----
-# plotEDAfunc <- function(data){
-#   higdata <- plotly::highlight_key(data)
-#   p <- GGally::ggpairs(
-#     higdata,
-#     title = 'Exploratory Data Analysis',
-#     lower = list(continuous = GGally::wrap("points",colour = "blue")),
-#     diag = list(continuous = GGally::wrap('densityDiag', color = "black", fill = "blue", alpha = 0.5)),
-#     upper = list(continuous = GGally::wrap('cor', size = 6))) +
-#     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
-#   shiny::renderPlot(p)
-# }
-
 plotedafunc <- function(data){
   library(ggplot2)
   library(GGally)
@@ -54,7 +42,88 @@ databasesum <- function(data){
   stat.desc(data)
 }
 
-#03-Alert when user start experimentation without all required parameters----
+#03-Training set periods plots----
+Setsvarsplots <- function(
+    selectedtrains,
+    EDA,
+    Xdata,
+    selectteststart,
+    selecttestend){
+  
+  library(shiny)
+  library(plotly)
+  
+  SVplots <- c()
+  
+  for (i1 in 1:dim(selectedtrains)[1]) {
+    
+    if(!(i1%%2) == 0){
+      element <- tagList(
+        div(
+          style = "float:left; width:48%;"
+        )
+      )
+      
+    }else{
+      element <- tagList(
+        div(
+          style = "float:right; width:48%;"
+        )
+      )
+    }
+    
+    p <- plot_ly(type = "scatter", mode = "lines") %>%
+      config(displayModeBar = F)
+      
+    for (i2 in 1:dim(EDA)[2]) {
+      stn <- which(Xdata == selectedtrains[i1,])
+      stt <- which(Xdata == selectteststart)
+      x1 <- Xdata[stn:stt]
+      y1 <- EDA[stn:stt,i2][[1]]
+      p <- p %>% add_trace(
+        x = x1,
+        y = y1,
+        mode = "lines",
+        legendgroup = colnames(EDA)[i2],
+        legendgrouptitle = list(text = colnames(EDA)[i2]),
+        name = 'train')
+        
+      linegtcolr <- i2 * 2
+        
+      ptogtcolr <- plotly_build(p)
+      nxtlinecolor <- ptogtcolr$x$data[[linegtcolr]]$line$color[1]
+      ett <- which(Xdata == selecttestend)
+      x2 <- Xdata[stt:ett]
+      y2 <- EDA[stt:ett,i2][[1]]
+        
+      p <- p %>% add_trace(
+        x = x2,
+        y = y2,
+        mode = "lines",
+        legendgroup = colnames(EDA)[i2],
+        name = 'test',
+        line = list(dash = "dash",
+                    color = nxtlinecolor))
+        
+    }
+      
+    element[[1]][[3]][[i1]] <- p
+    
+    if(i1 == 1){
+      
+      SVplots <- element
+        
+    }else{
+        
+      SVplots <- tagList(SVplots,element)
+    }
+    
+  }
+  
+  return(SVplots)
+}
+
+#04-Alert when user start experimentation without all required parameters----
 startalert <- tagList(
   div(
     p(
@@ -74,7 +143,7 @@ startalert <- tagList(
   )
 )
 
-#04-Function to find models to build per vectors----
+#05-Function to find models to build per vectors----
 findmodels <- function(lstm, neurons){
   
   for (i in 1:length(lstm)){
@@ -95,7 +164,7 @@ findmodels <- function(lstm, neurons){
   
 }
 
-#05-Function to build modal of models to build----
+#06-Function to build modal of models to build----
 selectmodelstobuild <- function(train, ts, sc, vec, lstm, neu){
   amountoftrain <- dim(train)[1]
   if(dim(train)[1] == 1){
@@ -174,12 +243,12 @@ selectmodelstobuild <- function(train, ts, sc, vec, lstm, neu){
   return(text)
 }
 
-#06-To stract character from right to left----
+#07-To stract character from right to left----
 substright <- function(x, n){
   substr(x,nchar(x)-n+1,nchar(x))
 }
 
-#07-To create time series----
+#08-To create time series----
 createts <- function(Date, variables, sttrain, ntrain, endtt){
   df <- cbind(Date, variables)
   start <- which(df[[1]] == sttrain[ntrain, ][[1]])  
@@ -187,7 +256,7 @@ createts <- function(Date, variables, sttrain, ntrain, endtt){
   df <- df[start:end,]
 }
 
-#08-To create transformations----
+#09-To create transformations----
 #First transformation
 firstrf <- function(TS){
   
@@ -249,7 +318,7 @@ secondtrf <- function(TS){
   return(logdf)
 }
 
-#09-Create transformed ts----
+#10-Create transformed ts----
 createtrfts <- function(TS, trf, ntrf){
   
   if(trf[ntrf] == "Original"){
@@ -270,7 +339,7 @@ createtrfts <- function(TS, trf, ntrf){
   
 }
 
-#10-To create scaled TS----
+#11-To create scaled TS----
 #To rescale data frames
 rescaledf <- function(x, to){
   
@@ -336,7 +405,7 @@ createscts <- function(TS, sc, nsc){
   
 }
 
-#11-To create vectors----
+#12-To create vectors----
 #3D vectors function
 threedvectfunc <- function(data, steps, datasample){
   if(is.data.frame(data)||is.matrix(data)){
@@ -356,7 +425,7 @@ threedvectfunc <- function(data, steps, datasample){
   return(threedrw)
 }
 
-#12-To search for inp and out----
+#13-To search for inp and out----
 whichequalvec <- function(vec,equalto){
   for (i in 1:length(equalto)) {
     if(i == 1){
@@ -369,7 +438,7 @@ whichequalvec <- function(vec,equalto){
   return(x)
 }
 
-#13-To create models----
+#14-To create models----
 createmodel <- function(structure, inputvec, outputvec){
   #In case of single LSTM layer
   if(dim(structure)[2] == 1){
@@ -412,7 +481,7 @@ createmodel <- function(structure, inputvec, outputvec){
   return(model)
   
 }
-#14-To create table of models----
+#15-To create table of models----
 #To paste characters inside a vector
 pastevec <- function(vect){
   for (i in 1:length(vect)) {
@@ -465,7 +534,7 @@ htmlTable <- function(df){
   return(x)
 }
 
-#15-Creating callback----
+#16-Creating callback----
 # Callback function:
 #   - On batch and epoch begin:
 updatingpg = function(session,pgbid,amount,item){
@@ -639,7 +708,7 @@ creatingcallback <- function(nmodel,
   
 }
 
-#16-To test model----
+#17-To test model----
 # - Transforming 3d vectors to 2d vector by droping the first dimension
 from3dto2d <-function(vec3d){
   
